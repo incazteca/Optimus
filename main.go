@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/rivo/tview"
 	"github.com/shopspring/decimal"
 	"io"
 	"io/ioutil"
@@ -60,6 +61,26 @@ func main() {
 
 	for _, holding := range holdings {
 		fmt.Println(holding)
+	}
+
+	app := tview.NewApplication()
+	table := tview.NewTable().SetBorders(true)
+
+	table.SetCell(0, 0, tview.NewTableCell("Symbol"))
+	table.SetCell(0, 1, tview.NewTableCell("Quantity"))
+	table.SetCell(0, 2, tview.NewTableCell("Target Allocation"))
+	table.SetCell(0, 3, tview.NewTableCell("Price"))
+	table.SetCell(0, 4, tview.NewTableCell("Price Fetched At"))
+	for row, holding := range holdings {
+		table.SetCell(row+1, 0, tview.NewTableCell(holding.Symbol))
+		table.SetCell(row+1, 1, tview.NewTableCell(holding.Quantity.StringFixed(2)))
+		table.SetCell(row+1, 2, tview.NewTableCell(holding.TargetAllocation.StringFixed(2)))
+		table.SetCell(row+1, 3, tview.NewTableCell(holding.Price.StringFixed(2)))
+		table.SetCell(row+1, 4, tview.NewTableCell(holding.PriceFetchedAt.Format("2006-01-02 15:04:05")))
+	}
+
+	if err := app.SetRoot(table, true).SetFocus(table).Run(); err != nil {
+		log.Fatal(err)
 	}
 }
 
