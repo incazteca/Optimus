@@ -1,4 +1,4 @@
-module github.com/incazteca/Optimus
+module github.com/incazteca/optimus
 
 go 1.13
 
