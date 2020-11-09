@@ -52,18 +52,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	holdings, err = fetchSymbolData(holdings)
+	err = fetchSymbolData(holdings)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(holdings)
+	for _, holding := range holdings {
+		fmt.Println(holding)
+	}
 }
 
 // fetchHoldings gets the current holdings in data.csv, In the future we'll just
 // fetch from Vanguard
-func fetchHoldings() ([]Holding, error) {
+func fetchHoldings() ([]*Holding, error) {
 	csvFile, err := os.Open(dataFile)
 
 	if err != nil {
@@ -71,7 +73,7 @@ func fetchHoldings() ([]Holding, error) {
 	}
 
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	var holdings []Holding
+	var holdings []*Holding
 
 	for {
 		record, err := reader.Read()
@@ -88,18 +90,20 @@ func fetchHoldings() ([]Holding, error) {
 			continue
 		}
 
-		holdings = append(holdings, Holding{
+		holding := Holding{
 			Symbol:           record[0],
 			Quantity:         decimal.RequireFromString(record[1]),
 			TargetAllocation: decimal.RequireFromString(record[2]),
-		})
+		}
+
+		holdings = append(holdings, &holding)
 	}
 
 	return holdings, nil
 }
 
 //fetchSymbolData gets extra data from AlphaVantage
-func fetchSymbolData(holdings []Holding) ([]Holding, error) {
+func fetchSymbolData(holdings []*Holding) error {
 	avKey := os.Getenv("AV_API_KEY")
 	avFunction := "GLOBAL_QUOTE"
 
@@ -109,14 +113,14 @@ func fetchSymbolData(holdings []Holding) ([]Holding, error) {
 
 		// If we get an error just return
 		if err != nil {
-			return holdings, err
+			return err
 		}
 
 		defer response.Body.Close()
 		body, err := ioutil.ReadAll(response.Body)
 
 		if err != nil {
-			return holdings, err
+			return err
 		}
 
 		var quote QuoteResponse
@@ -126,5 +130,5 @@ func fetchSymbolData(holdings []Holding) ([]Holding, error) {
 		holding.PriceFetchedAt = time.Now()
 	}
 
-	return holdings, nil
+	return nil
 }
