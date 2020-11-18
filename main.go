@@ -126,6 +126,11 @@ func fetchHoldings() ([]*Holding, error) {
 //fetchSymbolData gets extra data from AlphaVantage
 func fetchSymbolData(holdings []*Holding) error {
 	avKey := os.Getenv("AV_API_KEY")
+
+	if len(avKey) == 0 {
+		return nil
+	}
+
 	avFunction := "GLOBAL_QUOTE"
 
 	for _, holding := range holdings {
